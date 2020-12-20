@@ -1,0 +1,2 @@
+node_modules
+#이렇게 해주면 node_modules는 빼고 올릴 수 있음, 노드 모듈은 install한거라서 안올려도 됨
