@@ -58,7 +58,8 @@ userSchema.pre('save', function(next){
 userSchema.methods.comparePassword = function(plainPassword, cb ){
     //비밀번호 비교시, 플레인 패스워드를 암호화해서 암호화한게 맞는지 체크해줘야함
     // 내가 암호화된 비밀번호를 복호화 할 순 없음
-    
+
+    //this.password는 몽고DB에 있는 암호화된 패스워드를 가리킴
     bcrypt.compare(plainPassword, this.password, function(err, isMatch){
         if(err) 
             return cb(err)
@@ -78,7 +79,7 @@ userSchema.methods.generateToken = function(cb){
 }
 
 userSchema.statics.findByToken = function(token, cb) {
-    var user = this;
+    var user = this;//model {USER}
     //토큰을 디코드 한다
     jwt.verify(token, 'secretToken', function(err, decoded){
         //유저 아이디를 이용해서 유저를 찾은 다음 클라이언트에서 가져온 토큰과 DB에 보관된 토큰이 일치하는지 확인

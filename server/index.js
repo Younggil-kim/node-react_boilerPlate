@@ -1,19 +1,30 @@
 const express = require('express')//express 모듈을 가져옴
+//서버 만들때 편리하게 해 주는 프레임워크
 const app = express()//새 app을 만들고
+//ㅡㅡㅡㅡㅡ서버 만들기ㅡㅡㅡㅡㅡ
 const port = 5000//포트 번호 5천번을 백 서버로 둠
+
+
 //모델은 스키마를 감싸주기 위한것
 //스키마는 뭐냐면, 어떤 상품에 관련된 글을 작성을 하면 글을 작성한 사람이 누구인지 써야함
 //작성시에 포스트에 이름이 뭔지, 타입이 뭔지 하나하나 지정해 줄 수 있는게, 스키마임
 const {auth} = require("./middleware/auth");
+
 const {User} = require("./models/Users");
+//User스키마를 사용한다.
+
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-//바디파서는 클라이언트에서 오는 정보를 서버에서 분석해서 가져올 수 있게 해주는것
-// 그래서 이 부분은 application/x-www-form-urlencoded
-//라고 되어 있는 부분을 가져오는 부분
 app.use(bodyParser.urlencoded({extended: true}));
+//바디파서는 클라이언트에서 오는 정보를 서버에서 분석해서 가져올 수 있게 해주는것
+//데이터를 분석하게 해 주는 장치다.
 //이 아래 부분은 application/json 타입으로 되어있는것을 분석해서 가져오게 할 수 있게 이 두 줄을 넣은 것
 app.use(bodyParser.json());
+
+
+const cookieParser = require('cookie-parser');
+
+// 그래서 이 부분은 application/x-www-form-urlencoded
+//라고 되어 있는 부분을 가져오는 부분
 app.use(cookieParser());
 
 const config = require('./config/key');
@@ -25,23 +36,37 @@ mongoose.connect(config.mongoURI, {
 }).then(() => console.log('MongoDB connected...'))
  .catch(err => console.log(err))
 
-app.get('/', (req, res) => {
-	res.send('Hello World!~안녕하세요, 잠이 와요')
+//localhose:5000/
+app.get('/', (req, res) => {//서버 생성
+	res.send('Hello World!~안녕하세요')
 })
+//get, post, listen => RESTful API
+
+//localhose:5000/api/hello
+app.get('/api/hello', (req, res)=> {
+	res.send("안녕하세요!")
+})
+//노드js 서버단이니까, 해당하는 uri로 요청이 들어오면
+// 거기에 응답하는 코드.
 
 app.post('/api/users/register',(req, res) => {
-	const user = new User(req.body)//req.body 안에는 json형식으로 id : "gom991" 이런 식으로 들어있음, 이렇게 들어있게 할 수 있는 이유가 바디파서가 있어서 그럼
+	const user = new User(req.body)
+	//id: gom991
+	//password : gom991
+	//req.body 안에는 json형식으로 id : "gom991" 이런 식으로 들어있음, 
+	//이렇게 들어있게 할 수 있는 이유가 바디파서가 있어서 그럼
 	user.save((err, userInfo) => {
     	if(err) return res.json({success: false, err})//실패했으면 에러가 났다는걸 json형식으로 콜백해줌
     	return res.status(200).json({//status 200은 성공했다는 표시임
       	success: true
-    })
+	})//post니까 정보를 보낸다. 클라이언트단에서, 
   })//자 이렇게 되면 회원가입을 위한 라우트는 완성 
-
 })
 
 //클라이언트에서 보내주는 이름, 이메일 비밀번호 정보들을 가져오면 그것들을 데이터베이스에 넣어주는 역할
 app.post('/api/users/login', (req, res) => {
+	// id : gom991 password : 1234라는 정보가 클라이언트에서 옴
+
 	//1. 요청된 이메일이 db안에 있는지 찾기
 	User.findOne({ email: req.body.email}, (err, user) => {
 		if(!user){
@@ -50,7 +75,6 @@ app.post('/api/users/login', (req, res) => {
 				message: "이메일이 없습니다."
 			})
 		}
-
 		//유저가 있으면 비밀번호가 맞는지 확인
 		user.comparePassword( req.body.password, (err, isMatch) => {
 			if(!isMatch)
